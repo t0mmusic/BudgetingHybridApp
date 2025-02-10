@@ -1,0 +1,95 @@
+﻿@using BlazorBootstrap
+@using MauiWebApp.Domain.Expenses
+
+<Modal @ref="modal"></Modal>
+
+<Card Class="mb-3 shadow-sm">
+    <CardBody>
+        <div class="d-flex justify-content-between">
+            <h5 class="text-primary">
+                $@Expense.Amount.ToString("0.00")
+            </h5>
+            <div mb-2>
+                <small class="text-muted">@Expense.ExpenseDate.ToString("MMM dd, yyyy")</small>
+                <i class="bi bi-pencil btn btn-secondary" @onclick="EditCurrentExpense"></i>
+                <i class="bi bi-x-lg  btn btn-danger" @onclick="() => OnExpenseDeleted.InvokeAsync(Expense)"></i>
+            </div>
+        </div>
+        <p class="mb-2">@Expense.Description</p>
+
+        @if (Expense.IsRecurring)
+        {
+            <div>
+                <strong>Recurring:</strong>
+                <span class="text-@(Expense.IsRecurring ? "success" : "danger")">
+                    @(Expense.IsRecurring? Expense.Frequency: "Non-Recurring")
+                </span>
+            </div>
+        }
+
+        <div class="mt-2">
+            <strong>Tags: </strong>
+            @foreach (var tag in Expense.ExpenseTags)
+            {
+                <span class="tag-badge" style="@GetTagBackgroundColour(tag.Name)">
+                    @tag.Name
+                </span>
+            }
+        </div>
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public required ExpenseModel Expense { get; set; }
+    [Parameter]
+    public EventCallback<ExpenseModel> OnExpenseDeleted { get; set; }
+    [Parameter]
+    public EventCallback OnExpenseEdited { get; set; }
+    private Modal modal = default!;
+
+    private string GetTagBackgroundColour(string name)
+    {
+        var colour = $"background-color: {TagModel.GetHexColor(name)};";
+        return colour;
+    }
+
+    private async Task EditCurrentExpense()
+    {
+        var expenseModel = new ExpenseModel
+        {
+            Amount = Expense.Amount,
+            Description = Expense.Description,
+            ExpenseDate = Expense.ExpenseDate,
+            ExpenseTags = Expense.ExpenseTags,
+            Frequency = Expense.Frequency,
+            IsRecurring = Expense.IsRecurring,
+        };
+
+        var parameters = new Dictionary<string, object>
+{
+{ nameof(ExpenseForm.ExpenseModel), expenseModel },
+{ nameof(ExpenseForm.SubmitButtonLabel), "Update expense" },
+{ nameof(ExpenseForm.OnExpenseUpdated), EventCallback.Factory.Create<ExpenseModel>(this, EditExpense) }
+};
+        await modal.ShowAsync<ExpenseForm>(title: "Edit expense", parameters: parameters);
+    }
+
+    private async Task EditExpense(ExpenseModel expenseModel)
+    {
+        await modal.HideAsync();
+        if (!expenseModel.IsRecurring)
+        {
+            expenseModel.Frequency = BudgetModel.BudgetDuration.NonRecurring;
+        }
+
+        Expense.Amount = expenseModel.Amount;
+        Expense.Description = expenseModel.Description;
+        Expense.ExpenseTags = expenseModel.ExpenseTags;
+        Expense.Frequency = expenseModel.Frequency;
+        Expense.ExpenseDate = expenseModel.ExpenseDate;
+        Expense.IsRecurring = expenseModel.IsRecurring;
+
+        await OnExpenseEdited.InvokeAsync();
+    }
+}

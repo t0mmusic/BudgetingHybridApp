@@ -1,0 +1,60 @@
+﻿@using BlazorBootstrap
+
+<div class="container-fluid overflow-x-auto">
+    <LineChart @ref="lineChart" />
+</div>
+
+@code {
+    [Parameter]
+    public required List<IChartDataset> Datasets { get; set; }
+    [Parameter]
+    public required List<string> Labels { get; set; }
+    [Parameter]
+    public required string Title { get; set; }
+    [Parameter]
+    public required string XAxisTitle { get; set; }
+    [Parameter]
+    public required string YAxisTitle { get; set; }
+    private LineChart lineChart = default!;
+    private LineChartOptions lineChartOptions = default!;
+    private ChartData chartData = default!;
+
+    protected override void OnInitialized()
+    {
+        lineChartOptions = new();
+        lineChartOptions.Responsive = true;
+        lineChartOptions.Interaction = new Interaction { Mode = InteractionMode.Index };
+
+        lineChartOptions.Scales.X!.Title = new ChartAxesTitle { Text = XAxisTitle, Display = true };
+        lineChartOptions.Scales.Y!.Title = new ChartAxesTitle { Text = YAxisTitle, Display = true };
+
+        lineChartOptions.Plugins.Title!.Text = Title;
+        lineChartOptions.Plugins.Title.Display = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            chartData = new ChartData { Labels = Labels, Datasets = Datasets };
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+
+        else if (lineChart is not null)
+        {
+            chartData = new ChartData { Labels = Labels, Datasets = Datasets };
+            await lineChart.UpdateAsync(chartData, lineChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    @* protected override async Task OnParametersSetAsync()
+    {
+        if (lineChart is not null)
+        {
+            chartData = new ChartData { Labels = Labels, Datasets = Datasets };
+            await lineChart.UpdateAsync(chartData, lineChartOptions);
+        }
+    } *@
+
+}

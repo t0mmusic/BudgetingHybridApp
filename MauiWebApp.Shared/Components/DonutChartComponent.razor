@@ -1,0 +1,90 @@
+﻿@using BlazorBootstrap
+@using MauiWebApp.Domain.Expenses
+
+<DoughnutChart @ref="doughnutChart" />
+
+@code {
+    [Parameter]
+    public List<ExpenseModel> Expenses { get; set; } = new();
+    private DoughnutChartOptions doughnutChartOptions = default!;
+    private ChartData chartData = default!;
+    private DoughnutChart doughnutChart = default!;
+    private List<string> backgroundColours => CreateRandomBackgroundColours();
+    private List<string> CreateRandomBackgroundColours()
+    {
+        var colors = Expenses
+        .SelectMany(e => e.ExpenseTags)
+        .Select(t => t.Name)
+        .Distinct()
+        .Select(t => TagModel.GetHexColor(t))
+        .ToList();
+
+        return colors;
+    }
+
+    protected override void OnInitialized()
+    {
+        chartData = new ChartData();
+
+        chartData.Datasets = GetDefaultDataSets();
+        doughnutChartOptions = new();
+        doughnutChartOptions.Responsive = true;
+        doughnutChartOptions.Plugins.Title!.Text = "Expenses by tag";
+        doughnutChartOptions.Plugins.Title.Display = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (doughnutChart is not null)
+        {
+            chartData.Datasets = GetDefaultDataSets();
+
+            if (firstRender)
+            {
+                await doughnutChart.InitializeAsync(chartData, doughnutChartOptions);
+            }
+            else
+            {
+                await doughnutChart.UpdateAsync(chartData, doughnutChartOptions);
+            }
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private List<IChartDataset> GetDefaultDataSets()
+    {
+        var datasets = new List<IChartDataset>();
+
+        var tagTotals = Expenses
+        .SelectMany(e => e.ExpenseTags, (expense, tag) => new { tag.Name, expense.Amount })
+        .GroupBy(x => x.Name)
+        .Select(g => g.Sum(x => (double?)x.Amount))
+        .ToList();
+
+        var uniqueTags = Expenses.SelectMany(e => e.ExpenseTags).Select(t => t.Name).Distinct().ToList();
+        chartData.Labels = uniqueTags;
+
+        var donutChartDataset = new DoughnutChartDataset
+        {
+            Label = "Expenses",
+            Data = tagTotals,
+            BorderWidth = uniqueTags.Select(u => 0.1).ToList(),
+            BackgroundColor = backgroundColours
+        };
+
+        var budgetThresholdDataSet = new DoughnutChartDataset
+        {
+            Data = new List<double?> { 75, 25 },
+            BackgroundColor = ["#00FF00", "#FF0000"],
+            BorderWidth = [0.1, 0.1],
+            BorderColor = null,
+            Weight = 0.05
+        };
+
+        datasets.Add(donutChartDataset);
+        datasets.Add(budgetThresholdDataSet);
+        chartData.Datasets = datasets;
+
+        return datasets;
+    }
+}

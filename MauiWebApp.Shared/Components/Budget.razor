@@ -1,0 +1,62 @@
+﻿@using BlazorBootstrap
+@using MauiWebApp.Domain.Expenses
+<h3>Budget</h3>
+
+<label for="budget">Monthly Budget cap</label>
+<input type="number" @bind="budget" />
+
+<label>Remaining budget</label>
+$@RemainingBudget
+
+@* <ExpenseLineChart Expenses="Expenses" /> *@
+<DonutChartComponent Expenses="Expenses" />
+
+<Grid TItem="CostByTagModel" Data="CostByTag" Class="table table-hover table-bordered table-striped mt-3"
+    AllowFiltering="true" AllowPaging="true" AllowSorting="true" Responsive="true" PageSize="5">
+    <GridColumns>
+        <GridColumn TItem="CostByTagModel" PropertyName="Name" HeaderText="Tag" SortString="Tag"
+            SortKeySelector="c => c.Name" FilterTextboxWidth="100">
+            @context.Name
+        </GridColumn>
+        <GridColumn TItem="CostByTagModel" PropertyName="Cost" HeaderText="Cost" SortString="Cost"
+            SortKeySelector="c => c.Cost" FilterTextboxWidth="60">
+            $@context.Cost
+        </GridColumn>
+    </GridColumns>
+</Grid>
+
+@code {
+    [Parameter]
+    public List<ExpenseModel> Expenses { get; set; } = new();
+    public decimal RemainingBudget => budget - Expenses.Sum(e => e.Amount);
+    private decimal budget;
+    private List<CostByTagModel> CostByTag => CalculateCostByTag();
+    private List<CostByTagModel> CalculateCostByTag()
+    {
+        var costByTagModels = new List<CostByTagModel>();
+
+        foreach (var expense in Expenses)
+        {
+            foreach (var tag in expense.ExpenseTags)
+            {
+                if (costByTagModels.FirstOrDefault(c => c.Name == tag.Name) is CostByTagModel model)
+                {
+                    model.Cost += expense.Amount;
+                }
+                else
+                {
+                    costByTagModels.Add(new CostByTagModel { Name = tag.Name, Cost = expense.Amount });
+                }
+
+            }
+        }
+
+        return costByTagModels;
+    }
+
+    public class CostByTagModel
+    {
+        public required string Name { get; set; }
+        public decimal Cost { get; set; }
+    }
+}

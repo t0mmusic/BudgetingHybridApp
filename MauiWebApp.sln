@@ -1,0 +1,42 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiWebApp", "MauiWebApp\MauiWebApp.csproj", "{EA253010-80D1-EB20-4F76-67627C54C2FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiWebApp.Shared", "MauiWebApp.Shared\MauiWebApp.Shared.csproj", "{9403F7C2-F99E-17C9-2C1B-3EF4FB0E0E47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiWebApp.Web", "MauiWebApp.Web\MauiWebApp.Web.csproj", "{B60B9411-608E-D7EE-973B-851B9AEAABAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiWebApp.Domain", "MauiWebApp.Domain\MauiWebApp.Domain.csproj", "{9D0F4697-C337-43E3-850A-4C07D468E56B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA253010-80D1-EB20-4F76-67627C54C2FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA253010-80D1-EB20-4F76-67627C54C2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA253010-80D1-EB20-4F76-67627C54C2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA253010-80D1-EB20-4F76-67627C54C2FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9403F7C2-F99E-17C9-2C1B-3EF4FB0E0E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9403F7C2-F99E-17C9-2C1B-3EF4FB0E0E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9403F7C2-F99E-17C9-2C1B-3EF4FB0E0E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9403F7C2-F99E-17C9-2C1B-3EF4FB0E0E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B60B9411-608E-D7EE-973B-851B9AEAABAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60B9411-608E-D7EE-973B-851B9AEAABAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60B9411-608E-D7EE-973B-851B9AEAABAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60B9411-608E-D7EE-973B-851B9AEAABAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D0F4697-C337-43E3-850A-4C07D468E56B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D0F4697-C337-43E3-850A-4C07D468E56B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D0F4697-C337-43E3-850A-4C07D468E56B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D0F4697-C337-43E3-850A-4C07D468E56B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BDF318E1-C682-4A4B-9DAC-60AE86B4B4B9}
+	EndGlobalSection
+EndGlobal

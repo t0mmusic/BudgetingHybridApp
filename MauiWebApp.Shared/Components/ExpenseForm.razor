@@ -1,0 +1,71 @@
+﻿@using MauiWebApp.Domain.Expenses
+
+<EditForm Model="@ExpenseModel" OnValidSubmit="() => OnExpenseUpdated.InvokeAsync(ExpenseModel)">
+    <DataAnnotationsValidator />
+    <label>Date</label>
+    <InputDate class="form-control" @bind-Value="ExpenseModel.ExpenseDate" />
+    <label for="amount">Amount</label>
+    <div class="input-group">
+        <span class="input-group-text">$</span>
+        <InputNumber id="amount" class="form-control" @bind-Value="ExpenseModel.Amount" />
+    </div>
+    <label>Description</label>
+    <InputText class="form-control" @bind-Value="ExpenseModel.Description" />
+    <label>Frequency</label>
+    <div class="input-group">
+
+        <span class="input-group-text">
+            Recurring
+            <InputCheckbox class="form-check-input mb-1 ms-2 me-1" @bind-Value="ExpenseModel.IsRecurring" />
+        </span>
+
+        <InputSelect class="form-control dropdown-toggle" disabled="@(ExpenseModel.IsRecurring == false)"
+            @bind-Value="ExpenseModel.Frequency">
+            @foreach (var frequency in Frequencies)
+            {
+                <option class="dropdown-item" value="@frequency">@frequency</option>
+            }
+        </InputSelect>
+    </div>
+    <label>Tags</label>
+    <div class="input-group">
+        <InputSelect class="form-control dropdown-toggle" ValueExpression="@(() => SelectedTag)" Value="@SelectedTag"
+            ValueChanged="(string value) => AddTag(value)">
+            @foreach (var tag in Tags)
+            {
+                <option class="dropdown-item" value="@tag.Name">@tag.Name</option>
+            }
+        </InputSelect>
+    </div>
+    <Virtualize Items="ExpenseModel.ExpenseTags" Context="tag">
+        <div class="d-flex justify-content-between mt-2">
+            @tag.Name
+            <input type="button" class="btn btn-danger" @onclick="() => RemoveTag(tag.Name)" value="Remove tag"></input>
+        </div>
+    </Virtualize>
+    <ValidationSummary />
+    <input type="submit" class="btn btn-primary mt-2" value="@SubmitButtonLabel" />
+</EditForm>
+
+@code {
+    [Parameter]
+    public required ExpenseModel ExpenseModel { get; set; }
+    [Parameter]
+    public EventCallback<ExpenseModel> OnExpenseUpdated { get; set; }
+    [Parameter]
+    public string SubmitButtonLabel { get; set; } = "Add expense";
+    List<string> Frequencies = BudgetModel.BudgetDuration.AllDurations.ToList();
+    private List<TagModel> Tags = BaseTags.Tags.Select(t => new TagModel { Name = t }).ToList();
+    private string SelectedTag = string.Empty;
+    private void AddTag(string value)
+    {
+        Tags.RemoveAll(t => t.Name == value);
+        ExpenseModel.ExpenseTags.Add(new TagModel { Name = value });
+    }
+    private void RemoveTag(string value)
+    {
+        ExpenseModel.ExpenseTags.RemoveAll(t => t.Name == value);
+        Tags.Add(new TagModel { Name = value });
+    }
+
+}

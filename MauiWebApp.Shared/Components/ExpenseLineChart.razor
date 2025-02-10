@@ -1,0 +1,86 @@
+﻿@using BlazorBootstrap
+@using MauiWebApp.Domain.Expenses
+
+<LineChartComponent Datasets="Datasets" Labels="Labels" Title="@Title" XAxisTitle="@XAxisTitle"
+    YAxisTitle="@YAxisTitle" />
+
+@code {
+    [Parameter]
+    public List<ExpenseModel> Expenses { get; set; } = new();
+    public List<IChartDataset> Datasets { get; set; } = new List<IChartDataset>();
+
+    public List<string> Labels { get; set; } = new List<string>();
+
+    public string Title { get; set; } = "Expenses by tag";
+
+    public string XAxisTitle { get; set; } = "Day";
+
+    public string YAxisTitle { get; set; } = "Expenses";
+
+    protected override void OnParametersSet()
+    {
+        Labels = GetDaysOfMonth(1, 2025);
+        Datasets = GetMonthlyExpenseBreakdown(1, 2025, Expenses);
+    }
+
+    private List<IChartDataset> GetMonthlyExpenseBreakdown(int month, int year, List<ExpenseModel>
+    expenses)
+    {
+        var result = new Dictionary<string, List<double>>();
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+
+        // Initialize dictionary with all tags and "total" key, each having a list with zeros
+        var uniqueTags = expenses
+        .Where(e => e.ExpenseDate.Month == month && e.ExpenseDate.Year == year)
+        .SelectMany(e => e.ExpenseTags.Select(t => t.Name))
+        .Distinct();
+
+        foreach (var tag in uniqueTags)
+        {
+            result[tag] = Enumerable.Repeat(0d, daysInMonth).ToList();
+        }
+
+        result["total"] = Enumerable.Repeat(0d, daysInMonth).ToList();
+
+        // Process expenses and accumulate amounts
+        foreach (var expense in expenses.Where(e => e.ExpenseDate.Month == month && e.ExpenseDate.Year == year))
+        {
+            int dayIndex = expense.ExpenseDate.Day - 1; // Convert to 0-based index
+
+            foreach (var tag in expense.ExpenseTags)
+            {
+                result[tag.Name][dayIndex] += (double)expense.Amount;
+            }
+
+            // Accumulate total amount
+            result["total"][dayIndex] += (double)expense.Amount;
+        }
+
+        var datasets = new List<LineChartDataset>();
+        foreach (var entry in result)
+        {
+            for (int i = 1; i < daysInMonth; i++)
+            {
+                result[entry.Key][i] += result[entry.Key][i - 1];
+            }
+
+            datasets.Add(new LineChartDataset
+            {
+                Label = entry.Key,
+                Data = entry.Value.Cast<double?>().ToList(),
+                BackgroundColor = TagModel.GetHexColor(entry.Key),
+                BorderColor = TagModel.GetHexColor(entry.Key),
+                BorderWidth = entry.Key == "total" ? 4 : 2,
+                HoverBorderWidth = 4,
+            });
+        }
+
+        return datasets.Cast<IChartDataset>().ToList();
+    }
+
+    private List<string> GetDaysOfMonth(int month, int year)
+    {
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+        return Enumerable.Range(1, daysInMonth).Select(day => day.ToString()).ToList();
+    }
+}

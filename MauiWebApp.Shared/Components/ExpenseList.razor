@@ -1,0 +1,83 @@
+﻿@using MauiWebApp.Domain.Expenses
+@using MauiWebApp.Shared.Services
+@using BlazorBootstrap
+
+<Toasts Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.BottomCenter"></Toasts>
+<Modal @ref="modal"></Modal>
+
+<button class="btn btn-primary m-2" @onclick="CreateExpense">Add expense</button>
+
+<Virtualize Items="Expenses" Context="expense">
+    <ExpenseCard Expense="expense" OnExpenseDeleted="DeleteExpense" OnExpenseEdited="EditExpense" />
+</Virtualize>
+
+@code {
+    [Parameter]
+    public EventCallback<List<ExpenseModel>> OnExpensesUpdated { get; set; }
+    public List<ExpenseModel> Expenses { get; set; } = new List<ExpenseModel>();
+
+    private Modal modal = default!;
+    private List<ToastMessage> messages = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var expenseFetchService = new FetchExpenseDataService();
+        Expenses.AddRange(await expenseFetchService.GetExpensesAsync());
+        await OnExpensesUpdated.InvokeAsync(Expenses);
+    }
+
+    private async Task CreateExpense()
+    {
+        var expenseModel = new ExpenseModel
+        {
+            Amount = 0,
+            Description = string.Empty,
+            ExpenseDate = DateTime.Now
+        };
+
+        var parameters = new Dictionary<string, object>
+{
+{ "ExpenseModel", expenseModel },
+{ "OnExpenseUpdated", EventCallback.Factory.Create<ExpenseModel>(this, AddExpense) }
+};
+        await modal.ShowAsync<ExpenseForm>(title: "Add expense", parameters: parameters);
+    }
+
+    private async Task AddExpense(ExpenseModel expenseModel)
+    {
+        await modal.HideAsync();
+        if (!expenseModel.IsRecurring)
+        {
+            expenseModel.Frequency = BudgetModel.BudgetDuration.NonRecurring;
+        }
+
+        Expenses.Add(expenseModel);
+        messages.Add(new ToastMessage
+        {
+            Type = ToastType.Success,
+            Message = "Successfully added expense"
+        });
+        await OnExpensesUpdated.InvokeAsync(Expenses);
+    }
+
+    private async Task DeleteExpense(ExpenseModel expense)
+    {
+        Expenses.Remove(expense);
+        messages.Add(new ToastMessage
+        {
+            Type = ToastType.Success,
+            Message = "Successfully deleted expense"
+        });
+        await OnExpensesUpdated.InvokeAsync(Expenses);
+    }
+
+    private async Task EditExpense()
+    {
+        messages.Add(new ToastMessage
+        {
+            Type = ToastType.Success,
+            Message = "Successfully modifed expense"
+        });
+        await OnExpensesUpdated.InvokeAsync(Expenses);
+    }
+}
